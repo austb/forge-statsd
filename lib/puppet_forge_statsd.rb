@@ -20,7 +20,7 @@ module ForgeStatsD
     end
   end
 
-  def self.measure_request(key, value = nil, *metric_options, &block)
+  def self.measure_request(key, accumulate_key, value = nil, *metric_options, &block)
     if value.is_a?(Hash) && metric_options.empty?
       metric_options = [value]
       value = nil
@@ -29,7 +29,7 @@ module ForgeStatsD
     result = nil
     value  = 1000 * StatsD::Instrument.duration { result = block.call } if block_given?
 
-    ForgeStatsD.queue_time('waiting_for_request', value)
+    ForgeStatsD.queue_time(accumulate_key, value)
 
     metric = collect_metric(hash_argument(metric_options).merge(type: :ms, name: key, value: value))
     result = metric unless block_given?
@@ -42,10 +42,10 @@ module ForgeStatsD
       base.send :extend, StatsD::Instrument
     end
 
-    def statsd_measure_request(method, name, *metric_options)
+    def statsd_measure_request(method, accumulate_key, name, *metric_options)
       add_to_method(method, name, :measure) do |old_method, new_method, metric_name, *args|
         define_method(new_method) do |*args, &block|
-          ForgeStatsD.measure_request(StatsD::Instrument.generate_metric_name(metric_name, self, *args), nil, *metric_options) { send(old_method, *args, &block) }
+          ForgeStatsD.measure_request(StatsD::Instrument.generate_metric_name(metric_name, self, *args), accumulate_key, nil, *metric_options) { send(old_method, *args, &block) }
         end
       end
     end
