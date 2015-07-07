@@ -50,5 +50,36 @@ module ForgeStatsD
       end
     end
   end
+
+  # Used by the API to send timing metrics to StatsD
+  module SequelLogger
+    extend self
+
+    attr_accessor :query_count
+
+    def send(_, msg)
+      time, sql = msg.scan(/^\(([\d\.]+)s\) (.*)$/).first
+      return unless sql
+
+      table = sql[/(FROM|INTO) "(.*?)"/, 2] || 'unknown'
+      op = case sql
+        when /^insert/i then 'create'
+        when /^select/i then 'read'
+        when /^update/i then 'update'
+        when /^delete/i then 'delete'
+        else return
+      end
+
+      self.increment_queries
+      StatsD.queue("queries.database_time_per_request", time.to_f * 1000)
+      StatsD.timing("queries.#{op}.#{table}.sequel", time.to_f * 1000)
+    end
+
+    def increment_queries
+      @query_count ||= 0
+      @query_count += 1
+    end
+  end
+
 end
 
