@@ -71,8 +71,8 @@ module ForgeStatsD
       end
 
       self.increment_queries
-      StatsD.queue("queries.database_time_per_request", time.to_f * 1000)
-      StatsD.timing("queries.#{op}.#{table}.sequel", time.to_f * 1000)
+      ForgeStatsD.queue_time("queries.database_time_per_request", time.to_f * 1000)
+      ForgeStatsD.timing("queries.#{op}.#{table}.sequel", time.to_f * 1000)
     end
 
     def increment_queries
