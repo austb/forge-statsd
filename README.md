@@ -6,7 +6,7 @@
 
 ## Overview
 
-The ForgeStatsD gem extends StatsD and adds functionality needed for monitoring the Forge website. 
+The ForgeStatsD gem extends StatsD and adds functionality needed for monitoring the Forge website.
 
 ## Usage
 
@@ -46,7 +46,7 @@ This will log three pieces of information,
 
 ForgeStatsD.measure_request can also take a block of code to measure rather than a time.
 
-After every request, the application needs to call
+After every request, the application needs to call the following method.
 
 ```ruby
 ForgeStatsD.flush_times
@@ -54,8 +54,9 @@ ForgeStatsD.flush_times
 
 ## Metaprogramming Methods
 
-All [StatsD::Instrument metaprogramming methods](https://github.com/Shopify/statsd-instrument#metaprogramming-methods) are available under `ForgeStatsD::Intrument`
+All [StatsD::Instrument metaprogramming methods](https://github.com/Shopify/statsd-instrument#metaprogramming-methods) are available under `ForgeStatsD::Intrument`.
 
+ForgeStatsD methods can be added as class names in the same way that [StatsD class methods](https://github.com/Shopify/statsd-instrument#instrumenting-class-methods) are added.
 ### ForgeStatsD::Intrument.statsd_measure_request
 
 Operates the same as `statsd_measure`, but it calls measure_request and therefore also accumulates the time under a second key.
@@ -66,5 +67,5 @@ GoogleBase.extend ForgeStatsD::Intrument
 GoogleBase.statsd_measure_request(:method_name, key_for_accumulation, key_for_this_measurement)
 ```
 
-The key for the single measurement can be omitted in favor of a block that returns the key. See [StatsD documentation](https://github.com/Shopify/statsd-instrument#dynamic-metric-names) for details
+The key for the single measurement can be omitted in favor of a block that returns the key. See [StatsD documentation](https://github.com/Shopify/statsd-instrument#dynamic-metric-names) for details.
 
