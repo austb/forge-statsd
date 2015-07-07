@@ -1,3 +1,6 @@
+require 'statsd/instrument'
+require 'puppet_forge_statsd/version'
+
 module ForgeStatsD
   extend StatsD
 
