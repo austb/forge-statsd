@@ -33,23 +33,23 @@ ForgeStatsD.measure_request operates in a manner exactly the same as `StatsD.mea
 The time can then be flushed after each request.
 
 ```ruby
-ForgeStatsD.measure_request('external_request', 'time_waiting_for_external_request', 2.55)
+ForgeStatsD.measure_request('external_request', 'accumulation_key', 2.55)
 
-ForgeStatsD.measure_request('another_external_request', 'time_waiting_for_external_request', 3.45)
+ForgeStatsD.measure_request('another_external_request', 'accumulation_key', 3.45)
 ```
 
 This will log three pieces of information,
 
 * external_request:2.55
 * another_external_request:3.45
-* time_waiting_for_external_request:6.00
+* accumulation_key:6.00
 
 ForgeStatsD.measure_request can also take a block of code to measure rather than a time.
 
-After every request, the application needs to call the following method.
+After every request and for every accumulation key used, the application needs to call the following method, where key is the value passed in as the accumulation key.
 
 ```ruby
-ForgeStatsD.flush_times
+ForgeStatsD.flush_time(key)
 ```
 
 ## Metaprogramming Methods
@@ -68,4 +68,8 @@ GoogleBase.statsd_measure_request(:method_name, key_for_accumulation, key_for_th
 ```
 
 The key for the single measurement can be omitted in favor of a block that returns the key. See [StatsD documentation](https://github.com/Shopify/statsd-instrument#dynamic-metric-names) for details.
+
+### ForgeStatsD::Instrument.statsd_queue_time
+
+Queues the time measurement of the method it wraps. The times will be accumulated and should be flushed each request.
 
