@@ -3,21 +3,45 @@ require 'puppet_forge_statsd/version'
 
 module ForgeStatsD
   extend StatsD
+  extend self
 
-  def self.timing(key, ms=0, sample_rate=default_sample_rate)
+  # Pass variable information through to StatsD
+  attr_reader :logger, :default_sample_rate, :prefix
+
+  def logger=(val)
+    @logger = val
+    StatsD.logger = val
+  end
+
+  def default_sample_rate=(val)
+    @default_sample_rate = val
+    StatsD.default_sample_rate = val
+  end
+
+  def prefix=(val)
+    @prefix = val
+    StatsD.prefix = val
+  end
+
+  def backend=(val)
+    @backend = val
+    StatsD.backend = val
+  end
+
+  def timing(key, ms=0, sample_rate=default_sample_rate)
     collect_metric(:name => key, :value => ms, :type => :ms, :sample_rate => sample_rate)
   end
 
-  def self.queue_time(key, delta=0)
+  def queue_time(key, delta=0)
     @time_queue ||= Hash.new(0)
     @time_queue[key] += delta
   end
 
-  def self.flush_time(key)
+  def flush_time(key)
     self.timing(key, @time_queue.delete(key)) if @time_queue and @time_queue.has_key?(key)
   end
 
-  def self.measure_request(key, accumulate_key, value = nil, *metric_options, &block)
+  def measure_request(key, accumulate_key, value = nil, *metric_options, &block)
     if value.is_a?(Hash) && metric_options.empty?
       metric_options = [value]
       value = nil
