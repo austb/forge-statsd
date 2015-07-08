@@ -13,11 +13,8 @@ module ForgeStatsD
     @time_queue[key] += delta
   end
 
-  def self.flush_times
-    @time_queue ||= Hash.new(0)
-    @time_queue.each do |key, _|
-      self.timing(key, @time_queue.delete(key)) if @time_queue and @time_queue.has_key?(key)
-    end
+  def self.flush_time(key)
+    self.timing(key, @time_queue.delete(key)) if @time_queue and @time_queue.has_key?(key)
   end
 
   def self.measure_request(key, accumulate_key, value = nil, *metric_options, &block)
@@ -49,6 +46,19 @@ module ForgeStatsD
         end
       end
     end
+
+    def statsd_queue_time(method, name, *metric_options)
+      add_to_method(method, name, :measure) do |old_method, new_method, metric_name, *args|
+        define_method(new_method) do |*args, &block|
+          start = Time.now
+          send(old_method, *args, &block)
+          duration = (Time.now - start) * 1000
+          ForgeStatsD.queue_time(StatsD::Instrument.generate_metric_name(metric_name, self, *args), duration)
+
+        end
+      end
+    end
+
   end
 
   # Used by the API to send timing metrics to StatsD
