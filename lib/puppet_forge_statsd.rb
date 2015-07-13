@@ -75,10 +75,11 @@ module ForgeStatsD
       add_to_method(method, name, :measure) do |old_method, new_method, metric_name, *args|
         define_method(new_method) do |*args, &block|
           start = Time.now
-          send(old_method, *args, &block)
+          result = send(old_method, *args, &block)
           duration = (Time.now - start) * 1000
           ForgeStatsD.queue_time(StatsD::Instrument.generate_metric_name(metric_name, self, *args), duration)
 
+          result
         end
       end
     end
